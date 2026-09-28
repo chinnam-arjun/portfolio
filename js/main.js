@@ -1,9 +1,11 @@
 /* ==========================================================================
-   Pallapu Dileep Kumar - Premium Portfolio Script
-   Interactive logic: Particles, Typing, Filters, Animations, Theme, Modals
+   Chinnam Mallikarjuna Rao - Premium Portfolio Script
+   Interactive logic:
+   Theme | Particles | Typing | Scroll | Filters | Counters
+   Contact Form | Mobile Menu | Modals | GitHub
    ========================================================================== */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   initThemeToggle();
   initParticleBackground();
   initTypingEffect();
@@ -16,81 +18,138 @@ document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
   initModals();
   initSmoothScroll();
+  loadGitHubProfile();
 });
 
-/* --------------------------------------------------------------------------
-   1. Theme Switcher (Dark / Light Mode)
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   1. Theme Switcher
+   ========================================================================== */
+
 function initThemeToggle() {
-  const themeBtn = document.getElementById('theme-toggle');
+  const themeBtn = document.getElementById("theme-toggle");
+
   if (!themeBtn) return;
 
-  const currentTheme = localStorage.getItem('dileep_theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', currentTheme);
-  updateThemeIcon(currentTheme);
+  const savedTheme = localStorage.getItem("portfolio_theme") || "dark";
 
-  themeBtn.addEventListener('click', () => {
-    const activeTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = activeTheme === 'dark' ? 'light' : 'dark';
-    
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('dileep_theme', newTheme);
+  document.documentElement.setAttribute("data-theme", savedTheme);
+  updateThemeIcon(savedTheme);
+
+  themeBtn.addEventListener("click", () => {
+    const currentTheme =
+      document.documentElement.getAttribute("data-theme") || "dark";
+
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+
+    document.documentElement.setAttribute("data-theme", newTheme);
+
+    localStorage.setItem("portfolio_theme", newTheme);
+
     updateThemeIcon(newTheme);
   });
 }
 
 function updateThemeIcon(theme) {
-  const themeBtn = document.getElementById('theme-toggle');
+  const themeBtn = document.getElementById("theme-toggle");
+
   if (!themeBtn) return;
-  themeBtn.innerHTML = theme === 'dark' 
-    ? '<i class="fas fa-sun"></i>' 
-    : '<i class="fas fa-moon"></i>';
+
+  themeBtn.innerHTML =
+    theme === "dark"
+      ? '<i class="fas fa-sun" aria-hidden="true"></i>'
+      : '<i class="fas fa-moon" aria-hidden="true"></i>';
+
+  themeBtn.setAttribute(
+    "aria-label",
+    theme === "dark"
+      ? "Switch to light mode"
+      : "Switch to dark mode"
+  );
 }
 
-/* --------------------------------------------------------------------------
-   2. Canvas Particle Constellation Background
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   2. Hero Particle Background
+   ========================================================================== */
+
 function initParticleBackground() {
-  const canvas = document.getElementById('hero-canvas');
+  const canvas = document.getElementById("hero-canvas");
+
   if (!canvas) return;
 
-  const ctx = canvas.getContext('2d');
-  let width, height;
-  let particles = [];
-  const particleCount = Math.min(Math.floor(window.innerWidth / 15), 60);
+  const ctx = canvas.getContext("2d");
 
-  function resize() {
-    width = canvas.width = canvas.parentElement.offsetWidth;
-    height = canvas.height = canvas.parentElement.offsetHeight;
+  if (!ctx) return;
+
+  const reduceMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+
+  if (reduceMotion) return;
+
+  let width = 0;
+  let height = 0;
+  let animationFrame;
+
+  const isMobile = window.innerWidth <= 768;
+
+  const particleCount = isMobile
+    ? 25
+    : Math.min(Math.floor(window.innerWidth / 18), 55);
+
+  const particles = [];
+
+  function resizeCanvas() {
+    const parent = canvas.parentElement;
+
+    if (!parent) return;
+
+    const rect = parent.getBoundingClientRect();
+
+    width = canvas.width = Math.floor(rect.width);
+    height = canvas.height = Math.floor(rect.height);
   }
-
-  window.addEventListener('resize', resize);
-  resize();
 
   class Particle {
     constructor() {
       this.x = Math.random() * width;
       this.y = Math.random() * height;
-      this.vx = (Math.random() - 0.5) * 1.2;
-      this.vy = (Math.random() - 0.5) * 1.2;
-      this.radius = Math.random() * 2 + 1.5;
+
+      this.vx = (Math.random() - 0.5) * 0.7;
+      this.vy = (Math.random() - 0.5) * 0.7;
+
+      this.radius = Math.random() * 1.5 + 0.8;
     }
 
     update() {
       this.x += this.vx;
       this.y += this.vy;
 
-      if (this.x < 0 || this.x > width) this.vx *= -1;
-      if (this.y < 0 || this.y > height) this.vy *= -1;
+      if (this.x <= 0 || this.x >= width) {
+        this.vx *= -1;
+      }
+
+      if (this.y <= 0 || this.y >= height) {
+        this.vy *= -1;
+      }
     }
 
     draw() {
       ctx.beginPath();
-      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(139, 92, 246, 0.6)';
+
+      ctx.arc(
+        this.x,
+        this.y,
+        this.radius,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.fillStyle = "rgba(139, 92, 246, 0.55)";
       ctx.fill();
     }
   }
+
+  resizeCanvas();
 
   for (let i = 0; i < particleCount; i++) {
     particles.push(new Particle());
@@ -100,388 +159,652 @@ function initParticleBackground() {
     ctx.clearRect(0, 0, width, height);
 
     for (let i = 0; i < particles.length; i++) {
-      particles[i].update();
-      particles[i].draw();
+      const particle = particles[i];
+
+      particle.update();
+      particle.draw();
 
       for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const other = particles[j];
 
-        if (dist < 130) {
+        const dx = particle.x - other.x;
+        const dy = particle.y - other.y;
+
+        const distance = Math.sqrt(
+          dx * dx + dy * dy
+        );
+
+        const maxDistance = 120;
+
+        if (distance < maxDistance) {
           ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.strokeStyle = `rgba(59, 130, 246, ${1 - dist / 130})`;
-          ctx.lineWidth = 0.6;
+
+          ctx.moveTo(
+            particle.x,
+            particle.y
+          );
+
+          ctx.lineTo(
+            other.x,
+            other.y
+          );
+
+          ctx.strokeStyle =
+            `rgba(59, 130, 246, ${0.5 * (1 - distance / maxDistance)})`;
+
+          ctx.lineWidth = 0.5;
+
           ctx.stroke();
         }
       }
     }
-    requestAnimationFrame(animate);
+
+    animationFrame = requestAnimationFrame(animate);
   }
+
+  window.addEventListener("resize", resizeCanvas);
+
   animate();
+
+  window.addEventListener("beforeunload", () => {
+    cancelAnimationFrame(animationFrame);
+  });
 }
 
-/* --------------------------------------------------------------------------
+/* ==========================================================================
    3. Typing Effect
-   -------------------------------------------------------------------------- */
+   ========================================================================== */
+
 function initTypingEffect() {
-  const target = document.getElementById('typing-text');
+  const target = document.getElementById("typing-text");
+
   if (!target) return;
 
   const roles = [
-    "Computer Science Student",
     "Full-Stack Developer",
+    "MERN Stack Developer",
     "Java Developer",
     "Spring Boot Developer",
-    "AI Enthusiast",
-    "Web Developer",
+    "AI & RAG Enthusiast",
+    "Cloud & DevOps Learner",
     "Problem Solver"
   ];
 
-  let roleIdx = 0;
-  let charIdx = 0;
-  let isDeleting = false;
+  let roleIndex = 0;
+  let characterIndex = 0;
+  let deleting = false;
+
+  const reduceMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+
+  if (reduceMotion) {
+    target.textContent = roles[0];
+    return;
+  }
 
   function type() {
-    const currentRole = roles[roleIdx];
-    
-    if (isDeleting) {
-      target.textContent = currentRole.substring(0, charIdx - 1);
-      charIdx--;
+    const currentRole = roles[roleIndex];
+
+    if (!deleting) {
+      characterIndex++;
+
+      target.textContent =
+        currentRole.substring(0, characterIndex);
     } else {
-      target.textContent = currentRole.substring(0, charIdx + 1);
-      charIdx++;
+      characterIndex--;
+
+      target.textContent =
+        currentRole.substring(0, characterIndex);
     }
 
-    let typeSpeed = isDeleting ? 40 : 80;
+    let speed = deleting ? 40 : 75;
 
-    if (!isDeleting && charIdx === currentRole.length) {
-      typeSpeed = 2000;
-      isDeleting = true;
-    } else if (isDeleting && charIdx === 0) {
-      isDeleting = false;
-      roleIdx = (roleIdx + 1) % roles.length;
-      typeSpeed = 500;
+    if (!deleting && characterIndex === currentRole.length) {
+      speed = 1800;
+      deleting = true;
     }
 
-    setTimeout(type, typeSpeed);
+    if (deleting && characterIndex === 0) {
+      deleting = false;
+
+      roleIndex =
+        (roleIndex + 1) % roles.length;
+
+      speed = 500;
+    }
+
+    setTimeout(type, speed);
   }
 
   type();
 }
 
-/* --------------------------------------------------------------------------
-   4. Scroll Animations & Active Nav Highlighting
-   -------------------------------------------------------------------------- */
-function initScrollAnimations() {
-  const sections = document.querySelectorAll('section');
-  const navLinks = document.querySelectorAll('.nav-link');
+/* ==========================================================================
+   4. Scroll Animation + Active Navigation
+   ========================================================================== */
 
-  window.addEventListener('scroll', () => {
-    let currentSectionId = '';
+function initScrollAnimations() {
+  const sections = document.querySelectorAll("section[id]");
+  const navLinks = document.querySelectorAll(
+    ".nav-link"
+  );
+
+  if (!sections.length) return;
+
+  const updateActiveNav = () => {
+    const scrollPosition =
+      window.scrollY + 150;
+
+    let currentSection = "";
 
     sections.forEach(section => {
-      const sectionTop = section.offsetTop - 120;
-      if (window.scrollY >= sectionTop) {
-        currentSectionId = section.getAttribute('id');
+      if (scrollPosition >= section.offsetTop) {
+        currentSection = section.id;
       }
     });
 
     navLinks.forEach(link => {
-      link.classList.remove('active');
-      if (link.getAttribute('href') === `#${currentSectionId}`) {
-        link.classList.add('active');
+      link.classList.remove("active");
+
+      if (
+        link.getAttribute("href") ===
+        `#${currentSection}`
+      ) {
+        link.classList.add("active");
       }
     });
-  });
+  };
+
+  window.addEventListener(
+    "scroll",
+    updateActiveNav,
+    { passive: true }
+  );
+
+  updateActiveNav();
 }
 
-/* --------------------------------------------------------------------------
-   5. Skills Filter & Progress Bar Trigger
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   5. Skills Filter
+   ========================================================================== */
+
 function initSkillsFilter() {
-  const tabBtns = document.querySelectorAll('.skills-tabs .tab-btn');
-  const skillCards = document.querySelectorAll('.skill-card');
+  const buttons = document.querySelectorAll(
+    ".skills-tabs .tab-btn"
+  );
 
-  tabBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      tabBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+  const cards = document.querySelectorAll(
+    ".skill-card"
+  );
 
-      const filter = btn.dataset.filter;
+  if (!buttons.length || !cards.length) return;
 
-      skillCards.forEach(card => {
-        if (filter === 'all' || card.dataset.category === filter) {
-          card.style.display = 'flex';
-          card.style.animation = 'fadeIn 0.5s ease forwards';
-        } else {
-          card.style.display = 'none';
-        }
+  buttons.forEach(button => {
+    button.addEventListener("click", () => {
+      buttons.forEach(btn =>
+        btn.classList.remove("active")
+      );
+
+      button.classList.add("active");
+
+      const filter =
+        button.dataset.filter;
+
+      cards.forEach(card => {
+        const matches =
+          filter === "all" ||
+          card.dataset.category === filter;
+
+        card.style.display =
+          matches ? "flex" : "none";
       });
     });
   });
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const fills = entry.target.querySelectorAll('.progress-fill');
-        fills.forEach(fill => {
-          fill.style.width = fill.dataset.percent + '%';
+  const skillSection =
+    document.getElementById("skills");
+
+  if (!skillSection) return;
+
+  const observer =
+    new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+
+          const fills =
+            entry.target.querySelectorAll(
+              ".progress-fill"
+            );
+
+          fills.forEach(fill => {
+            const percent =
+              fill.dataset.percent || 0;
+
+            fill.style.width =
+              `${percent}%`;
+          });
+
+          observer.unobserve(entry.target);
         });
-      }
-    });
-  }, { threshold: 0.2 });
+      },
+      { threshold: 0.2 }
+    );
 
-  const skillSection = document.getElementById('skills');
-  if (skillSection) observer.observe(skillSection);
+  observer.observe(skillSection);
 }
 
-/* --------------------------------------------------------------------------
+/* ==========================================================================
    6. Projects Filter
-   -------------------------------------------------------------------------- */
+   ========================================================================== */
+
 function initProjectsFilter() {
-  const filterBtns = document.querySelectorAll('#projects .project-filters .tab-btn');
-  const projectCards = document.querySelectorAll('.project-card');
+  const buttons = document.querySelectorAll(
+    "#projects .project-filters .tab-btn"
+  );
 
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      filterBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+  const cards = document.querySelectorAll(
+    "#projects .project-card"
+  );
 
-      const filter = btn.dataset.filter;
+  if (!buttons.length || !cards.length) return;
 
-      projectCards.forEach(card => {
-        if (filter === 'all' || card.dataset.category === filter) {
-          card.style.display = 'flex';
-        } else {
-          card.style.display = 'none';
-        }
+  buttons.forEach(button => {
+    button.addEventListener("click", () => {
+      buttons.forEach(btn =>
+        btn.classList.remove("active")
+      );
+
+      button.classList.add("active");
+
+      const filter =
+        button.dataset.filter;
+
+      cards.forEach(card => {
+        const matches =
+          filter === "all" ||
+          card.dataset.category === filter;
+
+        card.style.display =
+          matches ? "flex" : "none";
       });
     });
   });
 }
+
+/* ==========================================================================
+   7. Certificate Filter
+   ========================================================================== */
 
 function initCertificatesFilter() {
-  const filterBtns = document.querySelectorAll('[data-cert-filter]');
-  const certCards = document.querySelectorAll('.cert-card');
-  const domainHeaders = document.querySelectorAll('.cert-domain-header');
+  const buttons =
+    document.querySelectorAll(
+      "[data-cert-filter]"
+    );
 
-  if (!filterBtns.length || !certCards.length) return;
+  const cards =
+    document.querySelectorAll(
+      ".cert-card"
+    );
 
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      filterBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+  const headers =
+    document.querySelectorAll(
+      ".cert-domain-header"
+    );
 
-      const filter = btn.dataset.certFilter;
-
-      certCards.forEach(card => {
-        const isFeatured = card.dataset.certFeatured === 'true';
-        const category = card.dataset.certCategory;
-
-        if (filter === 'all') {
-          card.style.display = 'flex';
-        } else if (filter === 'featured') {
-          card.style.display = isFeatured ? 'flex' : 'none';
-        } else if (category === filter) {
-          card.style.display = 'flex';
-        } else {
-          card.style.display = 'none';
-        }
-      });
-
-      domainHeaders.forEach(header => {
-        const headerCategory = header.dataset.certDomain;
-        if (filter === 'all') {
-          header.style.display = 'flex';
-        } else if (filter === 'featured') {
-          header.style.display = headerCategory === 'featured' ? 'flex' : 'none';
-        } else if (headerCategory === filter) {
-          header.style.display = 'flex';
-        } else {
-          header.style.display = 'none';
-        }
-      });
-    });
-  });
-}
-
-/* --------------------------------------------------------------------------
-   7. Stat Counter Animations
-   -------------------------------------------------------------------------- */
-function initCounterAnimations() {
-  const counters = document.querySelectorAll('.stat-number');
-  let animated = false;
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting && !animated) {
-        animated = true;
-        counters.forEach(counter => {
-          const target = +counter.dataset.target;
-          const duration = 2000;
-          const step = target / (duration / 16);
-          let current = 0;
-
-          const updateCounter = () => {
-            current += step;
-            if (current < target) {
-              counter.textContent = Math.ceil(current);
-              requestAnimationFrame(updateCounter);
-            } else {
-              counter.textContent = target + '+';
-            }
-          };
-
-          updateCounter();
-        });
-      }
-    });
-  }, { threshold: 0.5 });
-
-  const achievementsSec = document.getElementById('achievements');
-  if (achievementsSec) observer.observe(achievementsSec);
-}
-
-/* --------------------------------------------------------------------------
-   8. Contact Form Handling
-   -------------------------------------------------------------------------- */
-function initContactForm() {
-  const form = document.getElementById('contact-form');
-  const submitBtn = document.getElementById('form-submit-btn');
-  const statusAlert = document.getElementById('form-status-alert');
-
-  if (!form) return;
-
-  // EmailJS Configuration
-  const EMAILJS_PUBLIC_KEY = "YOUR_PUBLIC_KEY"; // Replace with your EmailJS Public Key from emailjs.com
-  const EMAILJS_SERVICE_ID = "service_portfolio";
-  const EMAILJS_TEMPLATE_ID = "template_contact";
-
-  if (window.emailjs && EMAILJS_PUBLIC_KEY !== "YOUR_PUBLIC_KEY") {
-    emailjs.init(EMAILJS_PUBLIC_KEY);
+  if (!buttons.length || !cards.length) {
+    return;
   }
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+  buttons.forEach(button => {
+    button.addEventListener("click", () => {
+      buttons.forEach(btn =>
+        btn.classList.remove("active")
+      );
 
-    const name = document.getElementById('form-name').value.trim();
-    const email = document.getElementById('form-email').value.trim();
-    const subject = document.getElementById('form-subject').value.trim();
-    const message = document.getElementById('form-message').value.trim();
+      button.classList.add("active");
 
-    if (!name || !email || !subject || !message) {
-      showToast('Please fill out all required fields.', 'error');
-      return;
-    }
+      const filter =
+        button.dataset.certFilter;
 
-    // Set UI loading state
-    const originalBtnContent = submitBtn.innerHTML;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Sending Message...`;
+      cards.forEach(card => {
+        const category =
+          card.dataset.certCategory;
 
-    if (statusAlert) statusAlert.style.display = 'none';
+        const featured =
+          card.dataset.certFeatured === "true";
 
-    try {
-      if (window.emailjs && EMAILJS_PUBLIC_KEY !== "YOUR_PUBLIC_KEY") {
-        // Send email using EmailJS SDK
-        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-          from_name: name,
-          from_email: email,
-          reply_to: email,
-          to_name: "Pallapu Dileep Kumar",
-          to_email: "dileepkumarpallapu28@gmail.com",
-          subject: subject,
-          message: message
-        });
+        let visible = false;
 
-        showToast('Message sent successfully!', 'success');
-        if (statusAlert) {
-          statusAlert.style.display = 'block';
-          statusAlert.style.background = 'rgba(16, 185, 129, 0.15)';
-          statusAlert.style.border = '1px solid rgba(16, 185, 129, 0.4)';
-          statusAlert.style.color = '#10b981';
-          statusAlert.innerHTML = `
-            <strong><i class="fas fa-check-circle"></i> Message Sent Successfully!</strong><br>
-            Thank you <strong>${name}</strong>! Your message has been sent directly to <strong>dileepkumarpallapu28@gmail.com</strong>.
-          `;
-        }
-        form.reset();
-      } else {
-        // Fallback HTTP POST / mailto trigger
-        const formData = new FormData(form);
-        const response = await fetch(form.action, {
-          method: 'POST',
-          body: formData,
-          headers: { 'Accept': 'application/json' }
-        });
-
-        if (response.ok) {
-          showToast('Message sent successfully!', 'success');
-          if (statusAlert) {
-            statusAlert.style.display = 'block';
-            statusAlert.style.background = 'rgba(16, 185, 129, 0.15)';
-            statusAlert.style.border = '1px solid rgba(16, 185, 129, 0.4)';
-            statusAlert.style.color = '#10b981';
-            statusAlert.innerHTML = `
-              <strong><i class="fas fa-check-circle"></i> Message Sent Successfully!</strong><br>
-              Thank you <strong>${name}</strong>! Your message has been sent directly to <strong>dileepkumarpallapu28@gmail.com</strong>.
-            `;
-          }
-          form.reset();
+        if (filter === "all") {
+          visible = true;
+        } else if (filter === "featured") {
+          visible = featured;
         } else {
-          // Direct Mail Client trigger fallback
-          const mailtoUri = `mailto:dileepkumarpallapu28@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent("From: " + name + " (" + email + ")\n\n" + message)}`;
-          window.open(mailtoUri, '_blank');
-
-          showToast('Direct Mail Client opened!', 'success');
-          if (statusAlert) {
-            statusAlert.style.display = 'block';
-            statusAlert.style.background = 'rgba(16, 185, 129, 0.15)';
-            statusAlert.style.border = '1px solid rgba(16, 185, 129, 0.4)';
-            statusAlert.style.color = '#10b981';
-            statusAlert.innerHTML = `
-              <strong><i class="fas fa-check-circle"></i> Direct Email Application Opened!</strong><br>
-              Thank you <strong>${name}</strong>! Your email client was opened to send your message directly to <strong>dileepkumarpallapu28@gmail.com</strong>.
-            `;
-          }
-          form.reset();
+          visible =
+            category === filter;
         }
-      }
-    } catch (error) {
-      const mailtoUri = `mailto:dileepkumarpallapu28@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent("From: " + name + " (" + email + ")\n\n" + message)}`;
-      window.open(mailtoUri, '_blank');
 
-      showToast('Direct Mail Client opened!', 'success');
-      if (statusAlert) {
-        statusAlert.style.display = 'block';
-        statusAlert.style.background = 'rgba(16, 185, 129, 0.15)';
-        statusAlert.style.border = '1px solid rgba(16, 185, 129, 0.4)';
-        statusAlert.style.color = '#10b981';
-        statusAlert.innerHTML = `
-          <strong><i class="fas fa-check-circle"></i> Direct Email Application Opened!</strong><br>
-          Thank you <strong>${name}</strong>! Your email client was opened to send your message directly to <strong>dileepkumarpallapu28@gmail.com</strong>.
-        `;
-      }
-      form.reset();
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = originalBtnContent;
-    }
+        card.style.display =
+          visible ? "flex" : "none";
+      });
+
+      headers.forEach(header => {
+        const category =
+          header.dataset.certDomain;
+
+        if (
+          filter === "all" ||
+          filter === category
+        ) {
+          header.style.display = "flex";
+        } else {
+          header.style.display = "none";
+        }
+      });
+    });
   });
 }
 
-function showToast(msg, type = 'success') {
-  const container = document.getElementById('toast-container');
+/* ==========================================================================
+   8. Statistics Counter
+   ========================================================================== */
+
+function initCounterAnimations() {
+  const counters =
+    document.querySelectorAll(
+      ".stat-number"
+    );
+
+  const section =
+    document.getElementById(
+      "achievements"
+    );
+
+  if (!counters.length || !section) {
+    return;
+  }
+
+  let animated = false;
+
+  const observer =
+    new IntersectionObserver(
+      entries => {
+        if (
+          !entries[0].isIntersecting ||
+          animated
+        ) {
+          return;
+        }
+
+        animated = true;
+
+        counters.forEach(counter => {
+          const target =
+            Number(counter.dataset.target);
+
+          if (Number.isNaN(target)) return;
+
+          animateCounter(counter, target);
+        });
+
+        observer.unobserve(section);
+      },
+      { threshold: 0.4 }
+    );
+
+  observer.observe(section);
+}
+
+function animateCounter(
+  element,
+  target
+) {
+  const duration = 1800;
+  const startTime = performance.now();
+
+  function update(currentTime) {
+    const progress =
+      Math.min(
+        (currentTime - startTime) /
+          duration,
+        1
+      );
+
+    const eased =
+      1 - Math.pow(1 - progress, 3);
+
+    const current =
+      Math.floor(target * eased);
+
+    element.textContent =
+      current;
+
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    } else {
+      element.textContent =
+        target;
+    }
+  }
+
+  requestAnimationFrame(update);
+}
+
+/* ==========================================================================
+   9. Contact Form - Formspree
+   ========================================================================== */
+
+function initContactForm() {
+  const form =
+    document.getElementById(
+      "contact-form"
+    );
+
+  const submitBtn =
+    document.getElementById(
+      "form-submit-btn"
+    );
+
+  const statusAlert =
+    document.getElementById(
+      "form-status-alert"
+    );
+
+  if (!form || !submitBtn) return;
+
+  form.addEventListener(
+    "submit",
+    async event => {
+      event.preventDefault();
+
+      const name =
+        document
+          .getElementById("form-name")
+          ?.value.trim();
+
+      const email =
+        document
+          .getElementById("form-email")
+          ?.value.trim();
+
+      const subject =
+        document
+          .getElementById("form-subject")
+          ?.value.trim();
+
+      const message =
+        document
+          .getElementById("form-message")
+          ?.value.trim();
+
+      if (
+        !name ||
+        !email ||
+        !subject ||
+        !message
+      ) {
+        showFormStatus(
+          "Please fill in all required fields.",
+          "error"
+        );
+
+        return;
+      }
+
+      const originalButton =
+        submitBtn.innerHTML;
+
+      submitBtn.disabled = true;
+
+      submitBtn.innerHTML =
+        '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+      try {
+        const formData =
+          new FormData(form);
+
+        const response =
+          await fetch(
+            form.action,
+            {
+              method: "POST",
+              body: formData,
+              headers: {
+                Accept:
+                  "application/json"
+              }
+            }
+          );
+
+        if (!response.ok) {
+          throw new Error(
+            "Form submission failed."
+          );
+        }
+
+        form.reset();
+
+        showFormStatus(
+          `Thank you, ${escapeHTML(name)}! Your message has been sent successfully. I'll get back to you soon.`,
+          "success"
+        );
+
+        showToast(
+          "Message sent successfully!",
+          "success"
+        );
+
+      } catch (error) {
+        console.error(
+          "Contact form error:",
+          error
+        );
+
+        showFormStatus(
+          "Sorry, your message could not be sent right now. Please try again or contact me directly by email.",
+          "error"
+        );
+
+        showToast(
+          "Unable to send message.",
+          "error"
+        );
+
+      } finally {
+        submitBtn.disabled = false;
+
+        submitBtn.innerHTML =
+          originalButton;
+      }
+    }
+  );
+
+  function showFormStatus(
+    message,
+    type
+  ) {
+    if (!statusAlert) return;
+
+    statusAlert.style.display = "block";
+
+    statusAlert.setAttribute(
+      "role",
+      "alert"
+    );
+
+    if (type === "success") {
+      statusAlert.style.background =
+        "rgba(16, 185, 129, 0.12)";
+
+      statusAlert.style.border =
+        "1px solid rgba(16, 185, 129, 0.35)";
+
+      statusAlert.style.color =
+        "#10b981";
+
+      statusAlert.innerHTML = `
+        <strong>
+          <i class="fas fa-check-circle"></i>
+          Message Sent
+        </strong>
+        <br>
+        ${message}
+      `;
+    } else {
+      statusAlert.style.background =
+        "rgba(239, 68, 68, 0.12)";
+
+      statusAlert.style.border =
+        "1px solid rgba(239, 68, 68, 0.35)";
+
+      statusAlert.style.color =
+        "#ef4444";
+
+      statusAlert.innerHTML = `
+        <strong>
+          <i class="fas fa-exclamation-circle"></i>
+          Message Not Sent
+        </strong>
+        <br>
+        ${message}
+      `;
+    }
+  }
+}
+
+/* ==========================================================================
+   10. Toast Notification
+   ========================================================================== */
+
+function showToast(
+  message,
+  type = "success"
+) {
+  const container =
+    document.getElementById(
+      "toast-container"
+    );
+
   if (!container) return;
 
-  const toast = document.createElement('div');
-  toast.className = 'toast';
+  const toast =
+    document.createElement("div");
+
+  toast.className =
+    `toast toast-${type}`;
+
+  const icon =
+    type === "success"
+      ? "fa-check-circle"
+      : "fa-exclamation-circle";
+
   toast.innerHTML = `
-    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}" style="color: ${type === 'success' ? '#10b981' : '#ef4444'}"></i>
-    <span>${msg}</span>
+    <i class="fas ${icon}"
+       aria-hidden="true"></i>
+
+    <span>${escapeHTML(message)}</span>
   `;
 
   container.appendChild(toast);
@@ -491,234 +814,462 @@ function showToast(msg, type = 'success') {
   }, 4000);
 }
 
-/* --------------------------------------------------------------------------
-   9. Mobile Navigation Drawer
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   11. Mobile Navigation
+   ========================================================================== */
+
 function initMobileMenu() {
-  const hamburger = document.getElementById('hamburger');
-  const mobileMenu = document.getElementById('mobile-menu');
+  const hamburger =
+    document.getElementById(
+      "hamburger"
+    );
 
-  if (!hamburger || !mobileMenu) return;
+  const mobileMenu =
+    document.getElementById(
+      "mobile-menu"
+    );
 
-  hamburger.addEventListener('click', () => {
-    mobileMenu.classList.toggle('open');
-  });
+  if (!hamburger || !mobileMenu) {
+    return;
+  }
 
-  const mobileLinks = mobileMenu.querySelectorAll('a');
-  mobileLinks.forEach(link => {
-    link.addEventListener('click', () => {
-      mobileMenu.classList.remove('open');
-    });
+  hamburger.setAttribute(
+    "aria-expanded",
+    "false"
+  );
+
+  hamburger.addEventListener(
+    "click",
+    () => {
+      const isOpen =
+        mobileMenu.classList.toggle(
+          "open"
+        );
+
+      hamburger.setAttribute(
+        "aria-expanded",
+        String(isOpen)
+      );
+
+      hamburger.classList.toggle(
+        "active",
+        isOpen
+      );
+    }
+  );
+
+  const links =
+    mobileMenu.querySelectorAll("a");
+
+  links.forEach(link => {
+    link.addEventListener(
+      "click",
+      () => {
+        mobileMenu.classList.remove(
+          "open"
+        );
+
+        hamburger.classList.remove(
+          "active"
+        );
+
+        hamburger.setAttribute(
+          "aria-expanded",
+          "false"
+        );
+      }
+    );
   });
 }
 
-/* --------------------------------------------------------------------------
-   10. Modals
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   12. Modal System
+   ========================================================================== */
+
 function initModals() {
-  const modalOverlay = document.getElementById('modal-overlay');
-  const modalBody = document.getElementById('modal-body');
-  const modalClose = document.getElementById('modal-close');
+  const overlay =
+    document.getElementById(
+      "modal-overlay"
+    );
 
-  if (!modalOverlay || !modalClose) return;
+  const body =
+    document.getElementById(
+      "modal-body"
+    );
 
-  modalClose.addEventListener('click', () => {
-    modalOverlay.classList.remove('open');
-  });
+  const closeBtn =
+    document.getElementById(
+      "modal-close"
+    );
 
-  modalOverlay.addEventListener('click', (e) => {
-    if (e.target === modalOverlay) {
-      modalOverlay.classList.remove('open');
+  if (!overlay || !closeBtn) {
+    return;
+  }
+
+  function closeModal() {
+    overlay.classList.remove(
+      "open"
+    );
+
+    document.body.style.overflow = "";
+
+    if (body) {
+      body.innerHTML = "";
     }
-  });
+  }
 
-  window.openCertModal = function(title, issuer, date, desc, imgSrc = null, credlyUrl = null) {
-    // Generate unique credential code based on issuer & title hash
-    const codeHash = Math.abs(title.split('').reduce((acc, char) => (acc << 5) - acc + char.charCodeAt(0), 0)).toString(16).toUpperCase().padStart(8, '0');
-    const issuerTag = issuer.includes('MongoDB') ? 'MDB' : (issuer.includes('Cisco') ? 'CSCO' : (issuer.includes('Oracle') ? 'ORCL' : 'INFY'));
-    const credentialID = `CERT-${issuerTag}-${date}-${codeHash.substring(0, 6)}`;
+  function openModal(content) {
+    if (body) {
+      body.innerHTML = content;
+    }
 
-    // Issuer color theme
-    const themeColor = issuer.includes('MongoDB') ? '#13aa52' : (issuer.includes('Cisco') ? '#38bdf8' : (issuer.includes('Oracle') ? '#f87171' : '#60a5fa'));
+    overlay.classList.add("open");
 
-    const imageHtml = imgSrc ? `
-      <div style="margin-bottom: 1.2rem; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-color); box-shadow: var(--glass-shadow);">
-        <img src="${imgSrc}" alt="${title} Certificate" style="width: 100%; height: auto; display: block; border-radius: var(--radius-md);">
-      </div>
-    ` : '';
+    document.body.style.overflow =
+      "hidden";
+  }
 
-    const credlyBtnHtml = credlyUrl ? `
-      <a href="${credlyUrl}" target="_blank" class="btn btn-primary btn-sm" style="background: linear-gradient(135deg, #13aa52, #116149);">
-        <i class="fas fa-external-link-alt"></i> Verify on Credly
-      </a>
-    ` : '';
+  closeBtn.addEventListener(
+    "click",
+    closeModal
+  );
 
-    modalBody.innerHTML = `
-      <div class="cert-modal-document" style="padding: 1.5rem; background: var(--bg-secondary); border: 2px solid ${themeColor}; border-radius: var(--radius-md); box-shadow: 0 10px 40px rgba(0,0,0,0.5); text-align: center; position: relative; overflow: hidden;">
-        
-        <!-- Header -->
-        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.8rem; margin-bottom: 1.2rem;">
-          <div style="display: flex; align-items: center; gap: 0.8rem;">
-            <div style="width: 38px; height: 38px; border-radius: 50%; background: ${themeColor}22; border: 1px solid ${themeColor}; color: ${themeColor}; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
-              <i class="fas fa-award"></i>
-            </div>
-            <span style="font-weight: 800; font-size: 1rem; color: var(--text-primary); text-transform: uppercase; letter-spacing: 1px;">${issuer}</span>
+  overlay.addEventListener(
+    "click",
+    event => {
+      if (
+        event.target === overlay
+      ) {
+        closeModal();
+      }
+    }
+  );
+
+  document.addEventListener(
+    "keydown",
+    event => {
+      if (
+        event.key === "Escape" &&
+        overlay.classList.contains("open")
+      ) {
+        closeModal();
+      }
+    }
+  );
+
+  /*
+   * Certificate modal
+   *
+   * This displays the actual certificate information.
+   * It does NOT create fake verification claims.
+   */
+
+  window.openCertModal = function (
+    title,
+    issuer,
+    date,
+    description,
+    imageSrc = null,
+    verificationUrl = null
+  ) {
+    const imageHTML =
+      imageSrc
+        ? `
+          <div class="certificate-preview">
+            <img
+              src="${escapeAttribute(imageSrc)}"
+              alt="${escapeAttribute(title)} certificate"
+              loading="lazy"
+            >
           </div>
-          <span style="font-family: var(--font-code); font-size: 0.75rem; color: var(--text-muted);">ID: ${credentialID}</span>
-        </div>
+        `
+        : "";
 
-        <!-- Official Certificate Image Preview -->
-        ${imageHtml}
+    const verifyButton =
+      verificationUrl
+        ? `
+          <a
+            href="${escapeAttribute(
+              verificationUrl
+            )}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-primary btn-sm"
+          >
+            <i class="fas fa-external-link-alt"></i>
+            Verify Certificate
+          </a>
+        `
+        : "";
 
-        <!-- Certificate Award Body -->
-        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.2rem;">
-          <h3 style="font-size: 1.25rem; font-weight: 700; color: ${themeColor}; line-height: 1.4;">
-            ${title}
+    const content = `
+      <div class="certificate-modal">
+
+        ${imageHTML}
+
+        <div class="certificate-info">
+
+          <span class="section-badge">
+            <i class="fas fa-award"></i>
+            Certificate
+          </span>
+
+          <h3>
+            ${escapeHTML(title)}
           </h3>
-          <p style="font-size: 0.9rem; color: var(--text-secondary);">Issued to <strong>Pallapu Dileep Kumar</strong> on ${date}</p>
+
+          <p class="certificate-issuer">
+            ${escapeHTML(issuer)}
+          </p>
+
+          <p class="certificate-date">
+            Issued: ${escapeHTML(date)}
+          </p>
+
+          <div class="certificate-description">
+            <strong>
+              <i class="fas fa-info-circle"></i>
+              Skills / Topics
+            </strong>
+
+            <p>
+              ${escapeHTML(description)}
+            </p>
+          </div>
+
+          <div class="certificate-actions">
+            ${verifyButton}
+
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              onclick="document.getElementById('modal-close').click()"
+            >
+              Close
+            </button>
+          </div>
+
         </div>
 
-        <!-- Course Description Box -->
-        <div style="background: rgba(255,255,255,0.03); border: 1px dashed var(--border-color); padding: 0.8rem 1rem; border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.2rem; text-align: left;">
-          <strong style="color: var(--text-primary);"><i class="fas fa-info-circle"></i> Skills Verified:</strong> ${desc}
-        </div>
-
-        <!-- Action Buttons -->
-        <div style="display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap;">
-          ${credlyBtnHtml}
-          <button class="btn btn-secondary btn-sm" onclick="alert('Verification Status: AUTHENTIC VERIFIED\\nCredential ID: ${credentialID}\\nIssued To: Pallapu Dileep Kumar\\nIssuer: ${issuer}');">
-            <i class="fas fa-shield-alt"></i> Verify Credential
-          </button>
-        </div>
       </div>
     `;
-    modalOverlay.classList.add('open');
+
+    openModal(content);
   };
 }
 
-/* --------------------------------------------------------------------------
-   11. Smooth Scrolling & Back To Top
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   13. Smooth Scroll + Back To Top
+   ========================================================================== */
+
 function initSmoothScroll() {
-  const backToTop = document.getElementById('back-to-top');
-  if (!backToTop) return;
-
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 400) {
-      backToTop.style.display = 'flex';
-    } else {
-      backToTop.style.display = 'none';
-    }
-  });
-
-  backToTop.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-}
-
-
-// ==========================================
-// GitHub Profile & Activity
-// ==========================================
-
-const GITHUB_USERNAME = "chinnam-arjun";
-
-async function loadGitHubProfile() {
-  try {
-    const response = await fetch(
-      `https://api.github.com/users/${GITHUB_USERNAME}`
+  const backToTop =
+    document.getElementById(
+      "back-to-top"
     );
 
+  const anchorLinks =
+    document.querySelectorAll(
+      'a[href^="#"]'
+    );
+
+  anchorLinks.forEach(link => {
+    link.addEventListener(
+      "click",
+      event => {
+        const targetID =
+          link.getAttribute("href");
+
+        if (
+          !targetID ||
+          targetID === "#"
+        ) {
+          return;
+        }
+
+        const target =
+          document.querySelector(
+            targetID
+          );
+
+        if (!target) return;
+
+        event.preventDefault();
+
+        const navbarHeight =
+          document.querySelector(
+            ".navbar"
+          )?.offsetHeight || 0;
+
+        const targetPosition =
+          target.getBoundingClientRect()
+            .top +
+          window.scrollY -
+          navbarHeight -
+          20;
+
+        window.scrollTo({
+          top: targetPosition,
+          behavior: "smooth"
+        });
+      }
+    );
+  });
+
+  if (!backToTop) return;
+
+  const toggleBackToTop = () => {
+    backToTop.style.display =
+      window.scrollY > 400
+        ? "flex"
+        : "none";
+  };
+
+  window.addEventListener(
+    "scroll",
+    toggleBackToTop,
+    { passive: true }
+  );
+
+  toggleBackToTop();
+
+  backToTop.addEventListener(
+    "click",
+    () => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    }
+  );
+}
+
+/* ==========================================================================
+   14. GitHub Profile
+   ========================================================================== */
+
+const GITHUB_USERNAME =
+  "chinnam-arjun";
+
+async function loadGitHubProfile() {
+  const profileURL =
+    `https://api.github.com/users/${GITHUB_USERNAME}`;
+
+  try {
+    const response =
+      await fetch(profileURL);
+
     if (!response.ok) {
-      throw new Error("GitHub profile not found");
+      throw new Error(
+        `GitHub API returned ${response.status}`
+      );
     }
 
-    const data = await response.json();
+    const data =
+      await response.json();
 
-    // Public repositories
-    const reposElement = document.getElementById("github-repos");
+    updateElement(
+      "github-repos",
+      data.public_repos
+    );
 
-    if (reposElement) {
-      reposElement.textContent = data.public_repos;
+    updateElement(
+      "github-followers",
+      data.followers
+    );
+
+    updateElement(
+      "github-following",
+      data.following
+    );
+
+    if (data.created_at) {
+      const year =
+        new Date(
+          data.created_at
+        ).getFullYear();
+
+      updateElement(
+        "github-year",
+        year
+      );
     }
 
-    // Followers
-    const followersElement =
-      document.getElementById("github-followers");
-
-    if (followersElement) {
-      followersElement.textContent = data.followers;
-    }
-
-    // Following
-    const followingElement =
-      document.getElementById("github-following");
-
-    if (followingElement) {
-      followingElement.textContent = data.following;
-    }
-
-    // GitHub account creation year
-    const yearElement =
-      document.getElementById("github-year");
-
-    if (yearElement) {
-      const accountYear =
-        new Date(data.created_at).getFullYear();
-
-      yearElement.textContent = accountYear;
-    }
-
-    // GitHub profile link
     const profileLink =
-      document.getElementById("github-profile-link");
+      document.getElementById(
+        "github-profile-link"
+      );
 
     if (profileLink) {
-      profileLink.href = data.html_url;
+      profileLink.href =
+        data.html_url;
+
+      profileLink.target =
+        "_blank";
+
+      profileLink.rel =
+        "noopener noreferrer";
     }
 
-    // Contribution graph
-    const contributionGraph =
+    const graph =
       document.getElementById(
         "github-contribution-graph"
       );
 
-    if (contributionGraph) {
-      contributionGraph.src =
+    if (graph) {
+      graph.src =
         `https://ghchart.rshah.org/${GITHUB_USERNAME}`;
 
-      contributionGraph.alt =
-        `${GITHUB_USERNAME}'s GitHub contribution graph`;
+      graph.alt =
+        `${GITHUB_USERNAME} GitHub contribution graph`;
     }
 
   } catch (error) {
-
     console.error(
       "GitHub profile loading failed:",
       error
     );
 
-    // Fallback values
-    const elements = [
+    [
       "github-repos",
       "github-followers",
       "github-following",
       "github-year"
-    ];
-
-    elements.forEach((id) => {
-      const element = document.getElementById(id);
-
-      if (element) {
-        element.textContent = "—";
-      }
+    ].forEach(id => {
+      updateElement(id, "—");
     });
   }
 }
 
+/* ==========================================================================
+   15. Utility Functions
+   ========================================================================== */
 
-// ==========================================
-// Initialize GitHub Section
-// ==========================================
+function updateElement(
+  id,
+  value
+) {
+  const element =
+    document.getElementById(id);
 
-loadGitHubProfile();
+  if (element) {
+    element.textContent = value;
+  }
+}
+
+function escapeHTML(value) {
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function escapeAttribute(value) {
+  return escapeHTML(value);
+}
