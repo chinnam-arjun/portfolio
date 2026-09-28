@@ -615,3 +615,110 @@ function initSmoothScroll() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 }
+
+
+// ==========================================
+// GitHub Profile & Activity
+// ==========================================
+
+const GITHUB_USERNAME = "chinnam-arjun";
+
+async function loadGitHubProfile() {
+  try {
+    const response = await fetch(
+      `https://api.github.com/users/${GITHUB_USERNAME}`
+    );
+
+    if (!response.ok) {
+      throw new Error("GitHub profile not found");
+    }
+
+    const data = await response.json();
+
+    // Public repositories
+    const reposElement = document.getElementById("github-repos");
+
+    if (reposElement) {
+      reposElement.textContent = data.public_repos;
+    }
+
+    // Followers
+    const followersElement =
+      document.getElementById("github-followers");
+
+    if (followersElement) {
+      followersElement.textContent = data.followers;
+    }
+
+    // Following
+    const followingElement =
+      document.getElementById("github-following");
+
+    if (followingElement) {
+      followingElement.textContent = data.following;
+    }
+
+    // GitHub account creation year
+    const yearElement =
+      document.getElementById("github-year");
+
+    if (yearElement) {
+      const accountYear =
+        new Date(data.created_at).getFullYear();
+
+      yearElement.textContent = accountYear;
+    }
+
+    // GitHub profile link
+    const profileLink =
+      document.getElementById("github-profile-link");
+
+    if (profileLink) {
+      profileLink.href = data.html_url;
+    }
+
+    // Contribution graph
+    const contributionGraph =
+      document.getElementById(
+        "github-contribution-graph"
+      );
+
+    if (contributionGraph) {
+      contributionGraph.src =
+        `https://ghchart.rshah.org/${GITHUB_USERNAME}`;
+
+      contributionGraph.alt =
+        `${GITHUB_USERNAME}'s GitHub contribution graph`;
+    }
+
+  } catch (error) {
+
+    console.error(
+      "GitHub profile loading failed:",
+      error
+    );
+
+    // Fallback values
+    const elements = [
+      "github-repos",
+      "github-followers",
+      "github-following",
+      "github-year"
+    ];
+
+    elements.forEach((id) => {
+      const element = document.getElementById(id);
+
+      if (element) {
+        element.textContent = "—";
+      }
+    });
+  }
+}
+
+
+// ==========================================
+// Initialize GitHub Section
+// ==========================================
+
+loadGitHubProfile();
