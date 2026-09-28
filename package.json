@@ -1,7 +1,7 @@
 {
-  "name": "dileep-kumar-portfolio",
+  "name": "mallikarjuna-rao-portfolio",
   "version": "1.0.0",
-  "description": "Modern Premium Personal Portfolio Website for Pallapu Dileep Kumar",
+  "description": "Personal portfolio of Chinnam Mallikarjuna Rao — Full Stack Developer, Cloud & DevOps enthusiast, and AI integration learner.",
   "main": "index.html",
   "scripts": {
     "start": "npx serve -l 3000",
@@ -9,12 +9,19 @@
   },
   "keywords": [
     "portfolio",
-    "developer",
-    "java",
-    "spring-boot",
-    "full-stack",
-    "ai"
+    "full-stack-developer",
+    "mern",
+    "react",
+    "nodejs",
+    "expressjs",
+    "mongodb",
+    "aws",
+    "devops",
+    "docker",
+    "jenkins",
+    "ai",
+    "rag"
   ],
-  "author": "Pallapu Dileep Kumar",
-  "license": "MIT"
+  "author": "Chinnam Mallikarjuna Rao",
+  
 }
